@@ -80,7 +80,7 @@ load_module_with_params ()
 
     # Insert kernel module - check exit code
     sudo dmesg -C
-    sudo insmod "${KERNEL_MODULE_NAME}.ko" charParameter="Summer" intParameter=2025
+    sudo insmod "${KERNEL_MODULE_NAME}.ko" charParameter="Fall" intParameter=2025
     if [ $? -ne 0 ]; then
         KERNEL_MODULE_ERR="${KERNEL_MODULE_ERR}\n - (-20 points) Insmod exitted with non-zero return code"
         popd 1>/dev/null
@@ -167,7 +167,7 @@ check_kernel_module ()
 
     # Step 6: Check output
     echo "[log]: Check dmesg output"
-    if ! check_module_output "Hello, I am .*, a student of CSE330 Summer 2025"; then
+    if ! check_module_output "Hello, I am .*, a student of CSE330 Fall 2025"; then
         let STATUS=1
     else
         echo "[log]: - Output is correct"
