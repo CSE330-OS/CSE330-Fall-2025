@@ -18,6 +18,7 @@ Make sure that you use the provided autograder and follow the instructions below
   - [UTM](https://docs.google.com/document/d/1FzgmOhXvqnyospJ3lSYJWFGDs8GnrFcXZMB_HYWVeck/edit?usp=sharing) 
   - [VMWare](https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/7-0/vsphere-virtual-machine-administration-guide-7-0/configuring-virtual-machine-hardwarevm-admin/virtual-disk-configurationvm-admin/add-a-hard-disk-to-a-virtual-machinevm-admin/add-a-new-hard-disk-to-a-virtual-machinevm-admin.html)
   - [Virtualbox](https://progmar.net.pl/en/knowledge-base/virtualbox-adding-removing-disk-drive)
+  
   After you have added the source and the cache device you can list all the available devices using `lsblk` command in your VM. Refer to the snapshot below where `/dev/nvme0n2` is the source device and     `/dev/nvme0n3` is the cache device. Note that the specific device names shown in your VM may be different. You can identify them by their sizes.
     <img width="583" height="242" alt="image" src="https://github.com/user-attachments/assets/20f75c11-9b2b-4673-8f54-c764d0e97182" />
 
