@@ -13,7 +13,7 @@ sudo fio \
   --name=random_reuse \
   --rw=randread \
   --direct=1 \
-  --size=1MB \
+  --size=128MB \
   --randrepeat=1 \
   --randseed=12345 \
   --numjobs=1
@@ -25,10 +25,9 @@ sudo fio \
   --name=sequential_once \
   --rw=read \
   --direct=1 \
-  --size=1MB \
-  --offset=4MB \
+  --size=128MB \
+  --offset=256MB \
   --numjobs=1
-
 sudo dmsetup status cache
 
 #Read Hits
@@ -37,14 +36,11 @@ sudo fio \
   --name=random_reuse \
   --rw=randread \
   --direct=1 \
-  --size=1MB \
+  --size=128MB \
   --randrepeat=1 \
   --randseed=12345 \
   --numjobs=1
-
 sudo dmsetup status cache
 
 sudo dmsetup remove cache
 sudo rmmod dmcache
-
-
