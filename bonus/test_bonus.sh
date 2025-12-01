@@ -4,7 +4,7 @@ make clean
 make
 
 sudo insmod dmcache.ko
-echo 0 4194304 cache $1 $2 8 262144 | sudo dmsetup create cache
+echo 0 4194304 cache $1 $2 8 32768 | sudo dmsetup create cache
 sudo dmsetup status cache
 
 # Read Miss
@@ -26,7 +26,7 @@ sudo fio \
   --rw=read \
   --direct=1 \
   --size=128MB \
-  --offset=256MB \
+  --offset=128MB \
   --numjobs=1
 sudo dmsetup status cache
 
