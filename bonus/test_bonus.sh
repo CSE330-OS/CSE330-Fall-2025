@@ -4,7 +4,7 @@ make clean
 make
 
 sudo insmod dmcache.ko
-echo 0 4194304 cache $1 $2 8 32768 | sudo dmsetup create cache
+echo 0 4194304 cache $1 $2 8 32778 | sudo dmsetup create cache
 sudo dmsetup status cache
 
 # Read Miss

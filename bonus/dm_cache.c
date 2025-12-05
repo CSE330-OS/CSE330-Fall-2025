@@ -23,6 +23,8 @@ struct cache_stats {
     atomic64_t writes;               /* Number of writes */
     atomic64_t cache_hits;           /* Number of cache hits */
     atomic64_t cache_misses;         /* Number of cache Misses */
+    atomic64_t allocates;			 /* Number of cache allocations */
+    atomic64_t replacements;		 /* Number of cache replacements */
 };
 
 /* dm_cache context structure */
@@ -97,6 +99,8 @@ static void dmcache_status(struct dm_target* ti, status_type_t type,
             DMINFO("- Writes:%llu", cache_stats_get(writes));
             DMINFO("- Cache Hits:%llu", cache_stats_get(cache_hits));
             DMINFO("- Cache Miss:%llu", cache_stats_get(cache_misses));
+            DMINFO("- Cache Allocates:%llu", cache_stats_get(allocates));
+            DMINFO("- Cache Replacements:%llu", cache_stats_get(replacements));
             DMINFO("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             break;
         default:
@@ -106,16 +110,40 @@ static void dmcache_status(struct dm_target* ti, status_type_t type,
 
 static int update_mapping(struct dm_cache_c *dmc, sector_t block, struct cacheblock *cache)
 {
-    cache->src_block_addr = block >> dmc->block_shift;
-    spin_lock(&dmc->cache_lock);
-    radix_tree_insert(dmc->cache, block >> dmc->block_shift, (void *) cache);
-    spin_unlock(&dmc->cache_lock);
-    return 1;
+	sector_t old_src_block;
+	sector_t new_src_block = block >> dmc->block_shift;
+
+	spin_lock(&dmc->cache_lock);
+
+	old_src_block = cache->src_block_addr;
+
+	if (cache_stats_get(allocates) < dmc->cache_size) {
+		cache_stats_inc(allocates);
+	    /*printk("[MISS][Admit] Source Address:%lld Allocates:%lld Replace:%lld Cache Address:%lld", 
+				new_src_block, cache_stats_get(allocates), cache_stats_get(replacements), 
+				cache->cache_block_addr);*/
+	} else {
+		if (old_src_block != new_src_block) { 
+			cache_stats_inc(replacements);
+	    	/*printk("[MISS][Admit] Source Address:%lld Allocates:%lld Replace:%lld Old src Address:%lld", 
+				new_src_block, cache_stats_get(allocates), cache_stats_get(replacements), 
+				old_src_block);*/
+			radix_tree_delete(dmc->cache, old_src_block);
+		}
+	}
+
+	cache->src_block_addr = new_src_block;
+	radix_tree_insert(dmc->cache, new_src_block, (void *) cache);
+	spin_unlock(&dmc->cache_lock);
+	return 1;
 }
 
 static int cache_hit(struct dm_cache_c *dmc, struct bio* bio, struct cacheblock *cache)
 {
     cache_stats_inc(cache_hits);
+    const unsigned int offset = (unsigned int)(bio->bi_iter.bi_sector & dmc->block_mask);
+    const sector_t request_block = bio->bi_iter.bi_sector - offset;
+    //printk("[HIT] Source Address:%lld Cache Address:%lld", request_block >> BLOCK_SHIFT, cache->cache_block_addr);
     my_cache_hit(dmc->cache_dev->bdev, cache, dmc->lru);
     return DM_MAPIO_SUBMITTED;
 }
@@ -130,8 +158,8 @@ static int cache_miss(struct dm_cache_c *dmc, struct bio* bio)
 
     cache = my_cache_miss(dmc->src_dev->bdev, dmc->cache_dev->bdev, request_block, dmc->lru);
 
-    if (cache) 
-	update_mapping(dmc, bio->bi_iter.bi_sector, cache);
+    if (cache)
+	    update_mapping(dmc, request_block, cache); 
 
     return DM_MAPIO_SUBMITTED;
 }
@@ -307,6 +335,7 @@ static int dmcache_ctr(struct dm_target* ti, unsigned int argc, char* *argv)
     DMINFO("- Source Device:%s", dmc->src_dev_name);
     DMINFO("- Cache Device:%s", dmc->cache_dev_name);
     DMINFO("- Block Size: %d", dmc->block_size);
+    DMINFO("- Cache Size:%lld", dmc->cache_size);
     DMINFO("----------------------------------------------");
 
 	return 0;
