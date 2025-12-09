@@ -36,7 +36,7 @@ linustorvalds@cse330:~/Autograder-Fall-2025/Project-5$
 ```
 
 ## Run the autograder
-- To run the autograder: ```sudo python3 autograder.py --devX "nvme0n2" --devY "nvme0n3```
+- To run the autograder: ```python3 autograder.py --devX "nvme0n2" --devY "nvme0n3```
   
 Note: Replace `nvme0n2` and `nvme0n3` as per your test setup. 
 - The autograder will look for submissions for each entry present in the class_roster.csv
